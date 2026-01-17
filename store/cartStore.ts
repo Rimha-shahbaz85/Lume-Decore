@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 export interface CartItem {
   id: string;
@@ -12,6 +12,8 @@ export interface CartItem {
 
 interface CartStore {
   items: CartItem[];
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
   addItem: (item: Omit<CartItem, "quantity">) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
@@ -24,6 +26,11 @@ export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      _hasHydrated: false,
+      
+      setHasHydrated: (state) => {
+        set({ _hasHydrated: state });
+      },
 
       addItem: (item) => {
         const items = get().items;
@@ -71,6 +78,20 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: "lume-cart-storage",
+      storage: createJSONStorage(() => {
+        // Return a no-op storage during SSR
+        if (typeof window === "undefined") {
+          return {
+            getItem: () => null,
+            setItem: () => {},
+            removeItem: () => {},
+          };
+        }
+        return localStorage;
+      }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

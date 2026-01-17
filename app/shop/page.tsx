@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { SlidersHorizontal, Grid3X3, LayoutGrid, X, ChevronDown } from "lucide-react";
@@ -24,6 +24,32 @@ const priceRanges = [
 ];
 
 export default function ShopPage() {
+  return (
+    <Suspense fallback={<ShopPageLoading />}>
+      <ShopContent />
+    </Suspense>
+  );
+}
+
+function ShopPageLoading() {
+  return (
+    <div className="pt-40 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <div className="h-12 bg-gray-200 rounded-lg w-64 mx-auto mb-4 animate-pulse" />
+          <div className="h-6 bg-gray-200 rounded-lg w-96 mx-auto animate-pulse" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="bg-gray-200 rounded-xl h-80 animate-pulse" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ShopContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
   const searchParam = searchParams.get("search");
